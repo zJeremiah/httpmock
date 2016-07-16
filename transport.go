@@ -2,7 +2,6 @@ package httpmock
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -59,58 +58,6 @@ func (m *MockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return runCancelable(m.noResponder, req)
 }
 
-func runCancelable(responder Responder, req *http.Request) (*http.Response, error) {
-	if req.Cancel == nil {
-		return responder(req)
-	}
-
-	// Set up a goroutine that translates a close(req.Cancel) into a
-	// "request canceled" error, and another one that runs the
-	// responder. Then race them: first to the result channel wins.
-
-	type result struct {
-		response *http.Response
-		err      error
-	}
-	resultch := make(chan result, 1)
-	done := make(chan struct{}, 1)
-
-	go func() {
-		select {
-		case <-req.Cancel:
-			resultch <- result{
-				response: nil,
-				err:      errors.New("request canceled"),
-			}
-		case <-done:
-		}
-	}()
-
-	go func() {
-		defer func() {
-			if err := recover(); err != nil {
-				resultch <- result{
-					response: nil,
-					err:      fmt.Errorf("panic in responder: got %q", err),
-				}
-			}
-		}()
-
-		response, err := responder(req)
-		resultch <- result{
-			response: response,
-			err:      err,
-		}
-	}()
-
-	r := <-resultch
-
-	// if a close(req.Cancel) is never coming,
-	// we'll need to unblock the first goroutine.
-	done <- struct{}{}
-
-	return r.response, r.err
-}
 
 // do nothing with timeout
 func (m *MockTransport) CancelRequest(req *http.Request) {}
