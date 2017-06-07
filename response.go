@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // ResponderFromResponse wraps an *http.Response in a Responder
@@ -103,6 +104,20 @@ func NewRespBodyFromString(body string) io.ReadCloser {
 // http response body.
 func NewRespBodyFromBytes(body []byte) io.ReadCloser {
 	return &dummyReadCloser{bytes.NewReader(body)}
+}
+
+// same as ResponderFromResponse with delay support
+func ResponderFromDelayResponse(delay time.Duration, resp *http.Response) Responder {
+	return func(req *http.Request) (*http.Response, error) {
+		time.Sleep(delay)
+		return resp, nil
+	}
+}
+
+// NewStringResponder creates a Responder from a given body (as a string) and status code.
+// it use delay to test cancellation incoming request
+func NewStringResponderWithDelay(delay time.Duration, status int, body string) Responder {
+	return ResponderFromDelayResponse(delay, NewStringResponse(status, body))
 }
 
 type dummyReadCloser struct {
