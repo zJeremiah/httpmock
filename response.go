@@ -145,9 +145,9 @@ type dummyReadCloser struct {
 
 func (d *dummyReadCloser) Read(p []byte) (n int, err error) {
 	n, err = d.body.Read(p)
-	if err == io.EOF {
-		d.body.Seek(0, 0)
-	}
+	//if err == io.EOF {
+	//	d.body.Seek(0, 0)
+	//}
 	return n, err
 }
 
