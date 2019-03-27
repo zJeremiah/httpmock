@@ -126,13 +126,13 @@ func NewSlowStringResponse(status int, body string) *http.Response {
 	return &http.Response{
 		Status:     strconv.Itoa(status),
 		StatusCode: status,
-		Body:       NewSlowRespBodyFromString(body),
+		Body:       NewSlowRespBodyFromString(body, 4096),
 		Header:     http.Header{},
 	}
 }
 
-func NewSlowRespBodyFromString(body string) io.ReadCloser {
-	return &dummyReadCloser{NewSlowReader(strings.NewReader(body), 4096)}
+func NewSlowRespBodyFromString(body string, bps int) io.ReadCloser {
+	return &dummyReadCloser{NewSlowReader(strings.NewReader(body), bps)}
 }
 
 func NewSlowStringResponder(delay time.Duration, status int, body string) Responder {
