@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -163,7 +162,6 @@ type SlowReader struct {
 
 func (sr SlowReader) Read(p []byte) (int, error) {
 	time.Sleep(sr.delay)
-	fmt.Println(sr.delay)
 	return sr.r.Read(p[:1])
 }
 
