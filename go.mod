@@ -1,3 +1,3 @@
-module github.com/rakuten-rad-sd/httpmock
+module github.com/httpmock
 
 go 1.20
